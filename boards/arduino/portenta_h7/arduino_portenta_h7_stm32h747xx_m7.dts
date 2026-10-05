@@ -239,3 +239,9 @@ zephyr_udc0: &usbotg_hs {
 		};
 	};
 };
+
+/* alias used by display shields (e.g. arduino_giga_display_shield) */
+zephyr_mipi_dsi: &mipi_dsi {};
+
+/* alias used by LCD display shields */
+zephyr_lcd_controller: &ltdc {};
