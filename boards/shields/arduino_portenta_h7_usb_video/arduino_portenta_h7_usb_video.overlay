@@ -1,0 +1,9 @@
+/*
+ * Copyright (c) 2025 Arduino SA
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * On-board USB-C DisplayPort/HDMI video output (ANX7625 bridge) of the
+ * Portenta H7. The configuration is board specific and lives in
+ * boards/arduino_portenta_h7_m7.overlay.
+ */

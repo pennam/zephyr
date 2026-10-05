@@ -1,0 +1,6 @@
+shield:
+  name: arduino_portenta_h7_usb_video
+  full_name: Arduino Portenta H7 USB-C Video (ANX7625)
+  vendor: arduino
+  supported_features:
+    - display
