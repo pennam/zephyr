@@ -1,0 +1,90 @@
+/*
+ * Copyright (c) 2025 Arduino SA
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Arduino GIGA Display Shield attached to a Portenta H7 through the midcarrier.
+ * The ST7701 panel node is provided by the shield's main overlay
+ * (arduino_giga_display_shield.overlay) under &zephyr_mipi_dsi; here we only
+ * configure the Portenta H7 LTDC + DSI host and their clocks.
+ *
+ * NOTE: the GPIO and clock values below reflect the Portenta H7 (HSE = 25 MHz)
+ *       and should be confirmed against the midcarrier wiring on real hardware.
+ */
+
+#include <zephyr/dt-bindings/display/panel.h>
+#include <zephyr/dt-bindings/gpio/gpio.h>
+
+/ {
+	chosen {
+		zephyr,display = &zephyr_lcd_controller;
+	};
+};
+
+&zephyr_lcd_controller {
+	status = "okay";
+	ext-sdram = <&sdram1>;
+	width = <480>;
+	height = <800>;
+	def-back-color-red = <0>;
+	def-back-color-green = <0>;
+	def-back-color-blue = <0>;
+	pixel-format = <PANEL_PIXEL_FORMAT_RGB_888>;
+
+	/* The midcarrier DSI connector carries only VIN/VCC + DSI lanes:
+	 * the panel backlight is hardware-powered, there is no control GPIO. */
+
+	/* sitronix, st7701 */
+	display-timings {
+		compatible = "zephyr,panel-timing";
+		hsync-active = <1>;
+		vsync-active = <0>;
+		de-active = <0>;
+		pixelclk-active = <0>;
+		hback-porch = <40>;
+		hsync-len = <32>;
+		hfront-porch = <8>;
+		vback-porch = <6>;
+		vsync-len = <8>;
+		vfront-porch = <9>;
+	};
+};
+
+/*
+ * ltdc uses pll3_r as the pixel clock. HSE = 25 MHz (div-m 25) gives the same
+ * 1 MHz PLL reference as the Giga (div-m 16 at HSE 16 MHz); 110 / 4 -> 27.5 MHz.
+ */
+&pll3 {
+	status = "okay";
+	clocks = <&clk_hse>;
+	div-m = <25>;
+	mul-n = <110>;
+	div-p = <2>;
+	div-q = <2>;
+	div-r = <4>; /* 27.5 MHz */
+};
+
+&zephyr_mipi_dsi {
+	status = "okay";
+
+	/* HSE 25 MHz / idf 2 = 12.5 MHz * ndiv 40 = 500 MHz -> 62.5 MHz lane byte clock */
+	pll-ndiv = <40>;
+	pll-idf = <2>;
+	pll-odf = <0>;
+
+	de-active-high;
+	largest-packet-size = <0>;
+
+	phy-timings = <35 35 35 35 0 10>;
+};
+
+/*
+ * The shield's main overlay enables the DFSDM microphone, but its pins are not
+ * routed through the Portenta H7 midcarrier (the dmic binding requires
+ * pinctrl-0). Remove it; it is unused for the display use case.
+ */
+/delete-node/ &pdm0;
+
+&dfsdm {
+	status = "disabled";
+};
