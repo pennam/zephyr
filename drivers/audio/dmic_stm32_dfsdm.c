@@ -156,6 +156,9 @@ static void dmic_stm32_dfsdm_write_sample(uint8_t *dst, uint8_t sample_size, int
 	case 3:
 		sys_put_le24((uint32_t)CLAMP(sample, -BIT(23), BIT(23) - 1), dst);
 		break;
+	case 4:
+		sys_put_le32((uint32_t)CLAMP(sample, -BIT(23), BIT(23) - 1), dst);
+		break;
 	default:
 		break;
 	}
@@ -179,7 +182,7 @@ void HAL_DFSDM_FilterRegConvCpltCallback(DFSDM_Filter_HandleTypeDef *hdfsdm_filt
 		return;
 	}
 
-	sample_size = DIV_ROUND_UP(data->pcm_width, BITS_PER_BYTE);
+	sample_size = dmic_stm32_dfsdm_sample_bytes(data->pcm_width);
 
 	if (data->pcm_shift > 0) {
 		sample >>= data->pcm_shift;
